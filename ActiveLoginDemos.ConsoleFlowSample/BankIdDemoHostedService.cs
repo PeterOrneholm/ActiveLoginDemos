@@ -79,13 +79,49 @@ internal sealed class BankIdDemoHostedService : IHostedService
             var grid = new Grid();
             grid.AddColumn(new GridColumn().NoWrap());
             grid.AddColumn(new GridColumn().PadLeft(2));
-            grid.AddRow("[b]Full name[/]", completionData.User.Name);
-            grid.AddRow("[b]Given name[/]", completionData.User.GivenName);
+
+            grid.AddRow("[b]Full name[/]", MaskFullName(completionData.User.Name));
+            grid.AddRow("[b]Given name[/]", MaskGivenName(completionData.User.GivenName));
             grid.AddRow("[b]Surname[/]", completionData.User.Surname);
-            grid.AddRow("[b]Personal Identity Number[/]", completionData.User.PersonalIdentityNumber);
+            grid.AddRow("[b]Personal Identity Number[/]", MaskIdentityNumber(completionData.User.PersonalIdentityNumber));
+
             var panel = new Panel(grid).Header($"Welcome {completionData.User.GivenName}", Justify.Center);
             AnsiConsole.Write(panel);
         }
+    }
+
+    public string MaskFullName(string fullName)
+    {
+        var nameParts = fullName.Split(' ');
+        var maskedName = nameParts[0];
+
+        for (var i = 1; i < nameParts.Length - 1; i++)
+        {
+            maskedName += " " + new string('*', nameParts[i].Length);
+        }
+
+        if (nameParts.Length > 1)
+        {
+            maskedName += " " + nameParts[nameParts.Length - 1];
+        }
+
+        return maskedName;
+    }
+
+    private static string MaskGivenName(string givenName)
+    {
+        var nameParts = givenName.Split(' ');
+        var firstName = nameParts[0];
+        for (var i = 1; i < nameParts.Length; i++)
+        {
+            firstName += " " + new string('*', nameParts[i].Length);
+        }
+        return firstName;
+    }
+
+    private static string MaskIdentityNumber(string identityNumber)
+    {
+        return identityNumber.Substring(0, identityNumber.Length - 4) + "****";
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
